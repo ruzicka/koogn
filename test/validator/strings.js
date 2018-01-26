@@ -137,11 +137,11 @@ stringFormats.regexp = stringFormats.regex
 stringFormats.pattern = stringFormats.regex
 stringFormats.ipv4 = {
   ...stringFormats['ip-address'],
-  reverse: false
+  reverse: false,
 }
 
 function contentOptionStringFormatTest(testFunction, option) {
-  Object.keys(stringFormats).filter(key => stringFormats[key].reverse).forEach(formatName => {
+  Object.keys(stringFormats).filter(key => stringFormats[key].reverse).forEach((formatName) => {
     if (formatName === 'style') {
       return // TODO temporarily disables styles tests, due to bug in jsonschema (https://github.com/tdegrunt/jsonschema/pull/243)
     }
@@ -152,16 +152,16 @@ function contentOptionStringFormatTest(testFunction, option) {
 
       const valid = Array.isArray(format.valid) ? format.valid : [format.valid]
       const invalid = Array.isArray(format.invalid) ? format.invalid : [format.invalid]
-      valid.forEach(example => {
+      valid.forEach((example) => {
         it(`should validate ${example} (${option})`, () => {
-          valid.forEach(instance => {
+          valid.forEach((instance) => {
             testFunction(instance, example, true)
           })
         })
       })
-      valid.forEach(example => {
+      valid.forEach((example) => {
         it(`should not validate ${example} (${option})`, () => {
-          invalid.forEach(instance => {
+          invalid.forEach((instance) => {
             testFunction(instance, example, false)
           })
         })
@@ -171,7 +171,7 @@ function contentOptionStringFormatTest(testFunction, option) {
 }
 
 function noneOptionStringFormatTest() {
-  Object.keys(stringFormats).forEach(formatName => {
+  Object.keys(stringFormats).forEach((formatName) => {
 
     const format = stringFormats[formatName]
 
@@ -180,12 +180,12 @@ function noneOptionStringFormatTest() {
       const valid = Array.isArray(format.valid) ? format.valid : [format.valid]
       const invalid = Array.isArray(format.invalid) ? format.invalid : [format.invalid]
 
-      valid.forEach(example => {
+      valid.forEach((example) => {
         it(`should validate ${example}`, () => {
-          valid.forEach(instance => {
+          valid.forEach((instance) => {
             testSNone(instance, example, true)
           })
-          invalid.forEach(instance => {
+          invalid.forEach((instance) => {
             testSNone(instance, example, true)
           })
         })
@@ -195,7 +195,7 @@ function noneOptionStringFormatTest() {
 }
 
 function nameOptionStringFormatTest(testFunction, option) {
-  Object.keys(stringFormats).forEach(formatName => {
+  Object.keys(stringFormats).forEach((formatName) => {
     if (formatName === 'regexp' || formatName === 'pattern') {
       return // TODO temporarily disables styles tests, due to bug in jsonschema (https://github.com/tdegrunt/jsonschema/pull/243)
     }
@@ -208,12 +208,12 @@ function nameOptionStringFormatTest(testFunction, option) {
       const invalid = Array.isArray(format.invalid) ? format.invalid : [format.invalid]
 
       it(`should validate ${formatName} (${option})`, () => {
-        valid.forEach(instance => {
+        valid.forEach((instance) => {
           testFunction(instance, formatName, true)
         })
       })
       it(`should not validate ${formatName} (${option})`, () => {
-        invalid.forEach(instance => {
+        invalid.forEach((instance) => {
           testFunction(instance, formatName, false)
         })
       })

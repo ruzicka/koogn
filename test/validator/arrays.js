@@ -296,7 +296,6 @@ describe('Array', () => {
     })
 
 
-
     const arrOfComplexObjsWithIncompatibilities = [
       {id: 11, a: [1, 2, 3, {test: 23}]},
       {id: 12, a: [1.1, 2.2, 3]},
@@ -352,28 +351,34 @@ describe('Array', () => {
 
 
     const complexObj = [
-      {id: 11,
+      {
+        id: 11,
         a: [
-          {b: [1, 2, 3],
+          {
+            b: [1, 2, 3],
             c: [1, 2, 3],
             d: [1, 2, 3],
             e: [1, 2, 3],
           },
-          {b: [1, 2, 3],
+          {
+            b: [1, 2, 3],
             c: [1, 2.2, 3],
             d: [1, 2, 3],
             e: [1, 2, {x: 11}],
           },
         ],
       },
-      {id: 12,
+      {
+        id: 12,
         a: [
-          {b: [1, 2, 3],
+          {
+            b: [1, 2, 3],
             c: [1, 2, 3],
             d: [1, 2.2, 3],
             e: [1, 2, 3],
           },
-          {b: [1, 2, 3],
+          {
+            b: [1, 2, 3],
             c: [1, 2.2, 3],
             d: [1, 2, 3],
             e: [1, 2, 3],
@@ -385,7 +390,8 @@ describe('Array', () => {
       const testCases = [
         [],
         [
-          {id: 11,
+          {
+            id: 11,
             a: [
               {
                 b: [1, 2, 3],
@@ -404,7 +410,8 @@ describe('Array', () => {
     it('should NOT validate by deeply nested obj (merging)', () => {
       const testCases = [
         [
-          {id: 11,
+          {
+            id: 11,
             a: [
               {
                 b: [1, 2, 'a'],

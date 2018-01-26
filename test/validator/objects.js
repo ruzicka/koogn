@@ -61,7 +61,7 @@ describe('Objects', () => {
         id: 12,
         a: [
           {test: 1},
-          {test: 'xxx'},  // incompatible
+          {test: 'xxx'}, // incompatible
         ],
       }
       const example = {

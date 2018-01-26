@@ -7,8 +7,7 @@ const {getValidatorOptions, convertToToJsonSchemaOptions} = require('./config')
 
 function formatErrors(errors) {
   return errors.map(item =>
-		`${item.property.replace('instance.', 'Parameter ')} ${item.message}`
-	).join(';')
+    `${item.property.replace('instance.', 'Parameter ')} ${item.message}`).join(';')
 }
 
 class Validator {

@@ -1,7 +1,5 @@
 'use strict'
 
-const merge = require('lodash.merge')
-
 const customFnc = (obj, defaultFnc) => obj.$schema || defaultFnc(obj)
 
 const defaultValidatorOptions = {
@@ -11,9 +9,6 @@ const defaultValidatorOptions = {
   strings: {
     formatDetectionMode: 'both', // none|name|content|both
   },
-  objects: {
-    customFnc,
-  }
 }
 
 const stringFormats = [
@@ -44,18 +39,26 @@ function stringsCustomFunction(value, defaultFnc) {
 }
 
 function getValidatorOptions(userOptions) {
-  return merge({}, defaultValidatorOptions, userOptions)
+  return {
+    arrays: Object.assign({}, defaultValidatorOptions.arrays, userOptions.arrays),
+    strings: Object.assign({}, defaultValidatorOptions.strings, userOptions.strings),
+  }
 }
 
 function convertToToJsonSchemaOptions(validatorOptions) {
   const {formatDetectionMode} = validatorOptions.strings
   const stringsDetectFormat = formatDetectionMode === 'both' || formatDetectionMode === 'content'
   const toJsonSchemaOptions = {
-    ...validatorOptions,
+    arrays: {
+      mode: validatorOptions.arrays.mode,
+    },
     strings: {
-      detectFormat: stringsDetectFormat
+      detectFormat: stringsDetectFormat,
     },
     required: true,
+    objects: {
+      customFnc,
+    },
   }
 
   if (formatDetectionMode === 'both' || formatDetectionMode === 'name') {
@@ -67,5 +70,5 @@ function convertToToJsonSchemaOptions(validatorOptions) {
 
 module.exports = {
   getValidatorOptions,
-  convertToToJsonSchemaOptions
+  convertToToJsonSchemaOptions,
 }

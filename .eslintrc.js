@@ -22,7 +22,17 @@ module.exports = {
       ignoreUrls: true,
       ignoreComments: false,
     }],
-
+    'comma-dangle': ['error', {
+      arrays: 'always-multiline',
+      objects: 'always-multiline',
+      imports: 'always-multiline',
+      exports: 'always-multiline',
+      functions: 'ignore',
+    }],
+    'object-curly-newline': ['error', {
+      ObjectExpression: 'never',
+      ObjectPattern: {multiline: true},
+    }],
     'object-curly-spacing': ['error', 'never']
   }
 }

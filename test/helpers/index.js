@@ -1,4 +1,5 @@
 'use strict'
+
 const {createValidator} = require('../../src')
 
 const mergingValidator = createValidator({arrays: {mode: 'all'}})

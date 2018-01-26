@@ -63,7 +63,7 @@ describe('Validator', () => {
   it('matching schema', () => {
     expect(defaultValidator.isValid(matchingInstance, book)).to.be.true
     expect(defaultValidator.validate(matchingInstance, book)).to.have.property('errors')
-      .that.is.an('array').with.length.of(0)
+      .that.is.an('array').with.lengthOf(0)
     expect(() => defaultValidator.throwIfNotValid(matchingInstance, book)).to.not.throw(ValidationError)
   })
 })
