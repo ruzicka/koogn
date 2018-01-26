@@ -30,8 +30,8 @@ module.exports = {
       functions: 'ignore',
     }],
     'object-curly-newline': ['error', {
-      ObjectExpression: 'never',
-      ObjectPattern: {multiline: true},
+      // multiline: true,
+      consistent: true,
     }],
     'object-curly-spacing': ['error', 'never']
   }
