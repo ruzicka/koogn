@@ -1,6 +1,6 @@
 'use strict'
 
-const {testBoth, testMerging, testNonMerging} = require('../helpers')
+const {testBoth, testMerging, testNonMerging } = require('../helpers')
 
 describe('Objects', () => {
 
@@ -286,7 +286,7 @@ describe('Objects', () => {
       }
       testBoth(instance, example, true)
     })
-    it('should not validate instance3', () => {
+    it('should not validate instance', () => {
       const instance = {
         id: 3,
         author: {
@@ -298,5 +298,116 @@ describe('Objects', () => {
       }
       testBoth(instance, example, false)
     })
+  })
+
+  describe('$schema with required property', () => {
+    const example = {
+      id: 1,
+      label: {$schema: {type: 'string', required: false}},
+    }
+    it('should validate', () => {
+      const instance = {
+        id: 3,
+        label: 'hello',
+      }
+      const instance2 = {
+        id: 3,
+      }
+      testBoth(instance, example, true)
+      testBoth(instance2, example, true)
+    })
+  })
+
+  describe.only('objects with $required and/or $optional', () => {
+
+    describe('simple object with $required', () => {
+      const example = {
+        id: 3,
+        author: 'john',
+        labels: ['hello', 'hi'],
+        $required: ['id', 'author'],
+      }
+
+      it('should validate object with all required and optional fields present', () => {
+        const instance = {
+          id: 5,
+          author: 'Jane Doe',
+          labels: ['nothing'],
+        }
+        testBoth(instance, example, true)
+      })
+
+
+      it('should validate object with missing optional property', () => {
+        const instance = {
+          id: 5,
+          author: 'Jane Doe',
+        }
+        testBoth(instance, example, true)
+      })
+
+
+      it('should not validate object with missing required property', () => {
+        const instance = {
+          id: 5,
+          labels: ['nothing'],
+        }
+        testBoth(instance, example, false)
+      })
+
+
+      it.only('should not validate object with extra property', () => {
+        const instance = {
+          id: 5,
+          author: 'Jane Doe',
+          labels: ['nothing'],
+          somethingNew: 'test',
+        }
+        testBoth(instance, example, false)
+      })
+
+    })
+
+    describe('array containing objects with $required/$optional', () => {
+
+      it('simple array with object conaining $require', () => {
+        const example = [{
+          a: 11,
+          b: 'str',
+          c: true,
+          $required: ['a', 'c'],
+        }]
+        const instance1 = [{
+          a: 3,
+          b: 'xxx',
+          c: false,
+        }]
+        const instance2 = [{
+          a: 3,
+          c: false,
+        }]
+        const instance3 = [{
+          a: 3,
+          b: 'xxx',
+        }]
+        testBoth(instance1, example, true)
+        testBoth(instance2, example, true)
+        testBoth(instance3, example, false)
+      })
+
+    })
+
+    describe('invalid values in $required/$optional', () => {
+      // it('should not validate object with extra property', () => {
+      //   const instance = {
+      //     id: 5,
+      //     author: 'Jane Doe',
+      //     labels: ['nothing'],
+      //     somethingNew: 'test',
+      //   }
+      //   testBoth(instance, example, false)
+      // })
+    })
+
   })
 })
