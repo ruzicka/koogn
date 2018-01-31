@@ -1,6 +1,6 @@
 'use strict'
 
-const {testBoth, testMerging, testNonMerging } = require('../helpers')
+const {testBoth, testMerging, testNonMerging} = require('../helpers')
 
 describe('Objects', () => {
 
@@ -225,7 +225,7 @@ describe('Objects', () => {
     const example = {
       id: 1,
       name: 'john',
-      labels: {$schema: {type: 'array', items: {type: 'string'}}},
+      labels: {$schema: {type: 'array', items: {type: 'string'}, required: true}},
     }
 
     it('should validate instance1', () => {
@@ -318,7 +318,7 @@ describe('Objects', () => {
     })
   })
 
-  describe.only('objects with $required and/or $optional', () => {
+  describe('objects with $required and/or $optional', () => {
 
     describe('simple object with $required', () => {
       const example = {
@@ -356,7 +356,7 @@ describe('Objects', () => {
       })
 
 
-      it.only('should not validate object with extra property', () => {
+      it('should not validate object with extra property', () => {
         const instance = {
           id: 5,
           author: 'Jane Doe',
@@ -370,7 +370,7 @@ describe('Objects', () => {
 
     describe('array containing objects with $required/$optional', () => {
 
-      it('simple array with object conaining $require', () => {
+      it('simple array with object containing $require', () => {
         const example = [{
           a: 11,
           b: 'str',
@@ -392,6 +392,40 @@ describe('Objects', () => {
         }]
         testBoth(instance1, example, true)
         testBoth(instance2, example, true)
+        testBoth(instance3, example, false)
+      })
+
+      it('object containing array of objects with $require', () => {
+        const example = {
+          a: [{
+            x: 'str',
+            y: true,
+            $required: ['y'],
+          }],
+          b: 11,
+        }
+        const instance1 = {
+          a: [{
+            y: false,
+          }],
+          b: 33,
+        }
+        const instance2 = {
+          a: [{
+            x: 'hello',
+          }],
+          b: 33,
+        }
+        const instance3 = {
+          a: [{
+            y: false,
+          }, {
+            x: 'hello',
+          }],
+          b: 33,
+        }
+        testBoth(instance1, example, true)
+        testBoth(instance2, example, false)
         testBoth(instance3, example, false)
       })
 

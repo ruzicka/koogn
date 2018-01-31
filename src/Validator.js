@@ -13,8 +13,13 @@ function formatErrors(errors) {
 
 function preProcessObject(obj) {
   const requireInfo = {
+    type: 'object',
     optional: [],
     properties: {},
+  }
+
+  if (obj.$schema) {
+    return [obj, requireInfo]
   }
 
   const requiredExists = Boolean(obj.$required)
@@ -33,9 +38,13 @@ function preProcessObject(obj) {
     if (current === '$required' || current === '$optional') {
       return acc
     }
-    if (!isPlainObject(obj[current]) || obj[current].$schema) {
+    if (Array.isArray(obj[current])) { // arrays
+      const [subArr, subRequireInfo] = preProcessArray(obj[current])
+      acc[current] = subArr
+      requireInfo.properties[current] = subRequireInfo
+    } else if (!isPlainObject(obj[current]) || obj[current].$schema) { // anything other than objects and arrays
       acc[current] = obj[current]
-    } else {
+    } else { // objects
       const [subObj, subRequireInfo] = preProcessObject(obj[current])
       acc[current] = subObj
       requireInfo.properties[current] = subRequireInfo
@@ -46,15 +55,56 @@ function preProcessObject(obj) {
   return [filteredObj, requireInfo]
 }
 
+function preProcessArray(arr) {
+  const requireInfo = {
+    type: 'array',
+    items: [],
+  }
+
+  const filteredArray = arr.map(arrItem => {
+    if (isPlainObject(arrItem)) {
+      const [filteredObj, reqInfo] = preProcessObject(arrItem)
+      requireInfo.items.push(reqInfo)
+      return filteredObj
+    } else if (Array.isArray(arrItem)) {
+      const [filteredArr, reqInfo] = preProcessArray(arrItem)
+      requireInfo.items.push(reqInfo)
+      return filteredArr
+    }
+    requireInfo.items.push(null)
+    return arrItem
+  })
+
+  return [filteredArray, requireInfo]
+}
+
+function preProcess(val) {
+  if (isPlainObject(val)) {
+    return preProcessObject(val)
+  } else if (Array.isArray(val)) {
+    return preProcessArray(val)
+  }
+  return [val, null]
+}
+
 function setSchemaRequire(schema, requireInfo) {
+  if (!requireInfo) {
+    return schema
+  }
 
-  requireInfo.optional.forEach(optionalProperty => {
-    schema.properties[optionalProperty].required = false
-  })
+  if (requireInfo.type === 'array') {
+    setSchemaRequire(schema.items, requireInfo.items[0])
+  }
 
-  Object.getOwnPropertyNames(requireInfo.properties).forEach(property => {
-    setSchemaRequire(schema.properties[property], requireInfo.properties[property])
-  })
+  if (requireInfo.type === 'object') {
+    requireInfo.optional.forEach(optionalProperty => {
+      schema.properties[optionalProperty].required = false
+    })
+
+    Object.getOwnPropertyNames(requireInfo.properties).forEach(property => {
+      setSchemaRequire(schema.properties[property], requireInfo.properties[property])
+    })
+  }
 
   return schema
 }
@@ -89,11 +139,13 @@ function getSchema(example, toJsonSchemaOptions) {
   //
   // return schema
 
-  const [preProcessedExample, requireInfo] = preProcessObject(example)
+  const a = 1
+  const [preProcessedExample, requireInfo] = preProcess(example)
   const schema = toJsonSchema(preProcessedExample, toJsonSchemaOptions)
 
-  const x = setSchemaRequire(schema, requireInfo)
-  return x
+  setSchemaRequire(schema, requireInfo)
+
+  return schema
 }
 
 class Validator {
@@ -107,7 +159,7 @@ class Validator {
       throw new ValidationError('Invalid example')
     }
     const schema = getSchema(example, this.toJsonSchemaOptions)
-    const x =  jsonSchemaValidate(instance, schema)
+    const x = jsonSchemaValidate(instance, schema)
     return x
   }
 

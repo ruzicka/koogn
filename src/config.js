@@ -1,6 +1,15 @@
 'use strict'
 
+const isPlainObject = require('lodash.isplainobject')
+
 const customFnc = (obj, defaultFnc) => obj.$schema || defaultFnc(obj)
+const requireOverrideFnc = (schema, obj, defaultFunc) => { // prevents override of required field in $schemas
+  if (isPlainObject(obj) && obj.$schema) {
+    return schema
+  }
+  return defaultFunc(schema)
+}
+
 
 const defaultValidatorOptions = {
   arrays: {
@@ -8,6 +17,9 @@ const defaultValidatorOptions = {
   },
   strings: {
     formatDetectionMode: 'both', // none|name|content|both
+  },
+  objects: {
+    additionalProperties: false,
   },
 }
 
@@ -40,8 +52,9 @@ function stringsCustomFunction(value, defaultFnc) {
 
 function getValidatorOptions(userOptions) {
   return {
-    arrays: Object.assign({}, defaultValidatorOptions.arrays, userOptions.arrays),
-    strings: Object.assign({}, defaultValidatorOptions.strings, userOptions.strings),
+    arrays: {...defaultValidatorOptions.arrays, ...userOptions.arrays},
+    strings: {...defaultValidatorOptions.strings, ...userOptions.strings},
+    objects: {...defaultValidatorOptions.objects, ...userOptions.objects},
   }
 }
 
@@ -58,6 +71,8 @@ function convertToToJsonSchemaOptions(validatorOptions) {
     required: true,
     objects: {
       customFnc,
+      requireOverrideFnc,
+      additionalProperties: validatorOptions.objects.additionalProperties,
     },
   }
 
