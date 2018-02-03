@@ -1,13 +1,11 @@
 'use strict'
 
-const isPlainObject = require('lodash.isplainobject')
-
-const customFnc = (obj, defaultFnc) => obj.$schema || defaultFnc(obj)
-const requireOverrideFnc = (schema, obj, defaultFunc) => { // prevents override of required field in $schemas
-  if (isPlainObject(obj) && obj.$schema) {
-    return schema
+const preProcessObjectFnc = (obj, defaultFnc) => obj.$schema || defaultFnc(obj)
+const postProcessCommonFnc = (type, schema, value, defaultFunc) => { // prevents override of required field in $schemas
+  if (type === 'object' && value.$schema) {
+    return schema // disabling default post processing (which is setting the require param)
   }
-  return defaultFunc(schema)
+  return defaultFunc(type, schema, value)
 }
 
 
@@ -62,22 +60,22 @@ function convertToToJsonSchemaOptions(validatorOptions) {
   const {formatDetectionMode} = validatorOptions.strings
   const stringsDetectFormat = formatDetectionMode === 'both' || formatDetectionMode === 'content'
   const toJsonSchemaOptions = {
+    required: true,
+    postProcessFnc: postProcessCommonFnc, // prevents override of required field in $schemas
     arrays: {
       mode: validatorOptions.arrays.mode,
     },
     strings: {
       detectFormat: stringsDetectFormat,
     },
-    required: true,
     objects: {
-      customFnc,
-      requireOverrideFnc,
+      preProcessFnc: preProcessObjectFnc, // makes $schema work
       additionalProperties: validatorOptions.objects.additionalProperties,
     },
   }
 
   if (formatDetectionMode === 'both' || formatDetectionMode === 'name') {
-    toJsonSchemaOptions.strings.customFnc = stringsCustomFunction
+    toJsonSchemaOptions.strings.preProcessFnc = stringsCustomFunction // takes care of string format auto-detection
   }
 
   return toJsonSchemaOptions

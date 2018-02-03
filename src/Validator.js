@@ -87,6 +87,7 @@ function preProcess(val) {
   return [val, null]
 }
 
+// TODO make this immutable
 function setSchemaRequire(schema, requireInfo) {
   if (!requireInfo) {
     return schema
@@ -95,6 +96,8 @@ function setSchemaRequire(schema, requireInfo) {
   if (requireInfo.type === 'array') {
     setSchemaRequire(schema.items, requireInfo.items[0])
   }
+
+  // TODO check for undefines (probably for empty objects)
 
   if (requireInfo.type === 'object') {
     requireInfo.optional.forEach(optionalProperty => {
@@ -110,36 +113,6 @@ function setSchemaRequire(schema, requireInfo) {
 }
 
 function getSchema(example, toJsonSchemaOptions) {
-
-  // const example1 = {
-  //   id: 1,
-  //   author: {
-  //     firstName: 'John',
-  //     lastName: 'Smith',
-  //     phones: {$schema: {type: 'array', items: {type: 'string'}}},
-  //     $required: ['lastName'],
-  //   },
-  //   labels: {$schema: {type: 'array', items: {type: 'string'}}},
-  //   $required: ['id', 'author'],
-  // }
-
-  // const req = {
-  //   required: ['id', 'author']
-  //   optional: ['labels']
-  //   author: {
-  //
-  //   }
-  //
-  //   id: true,
-  //   author: true
-  // }
-  //
-  //
-  // const schema = toJsonSchema(example, toJsonSchemaOptions)
-  //
-  // return schema
-
-  const a = 1
   const [preProcessedExample, requireInfo] = preProcess(example)
   const schema = toJsonSchema(preProcessedExample, toJsonSchemaOptions)
 
@@ -159,8 +132,7 @@ class Validator {
       throw new ValidationError('Invalid example')
     }
     const schema = getSchema(example, this.toJsonSchemaOptions)
-    const x = jsonSchemaValidate(instance, schema)
-    return x
+    return jsonSchemaValidate(instance, schema)
   }
 
   isValid(instance, example) {
