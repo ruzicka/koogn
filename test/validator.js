@@ -2,7 +2,7 @@
 
 const {expect} = require('chai')
 const {createValidator} = require('../src')
-const ValidationError = require('../src/ValidationError')
+const {ValidationError, InvalidExampleError} = require('../src/errors')
 
 const defaultValidator = createValidator()
 
@@ -50,7 +50,7 @@ const matchingInstance = {
 describe('Validator', () => {
 
   it('invalid example', () => {
-    expect(() => defaultValidator.isValid(book)).to.throw(ValidationError, 'Invalid example')
+    expect(() => defaultValidator.isValid(book)).to.throw(InvalidExampleError, 'Validation example is invalid')
   })
 
   it('not matching schema', () => {

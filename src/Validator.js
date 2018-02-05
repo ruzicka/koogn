@@ -3,12 +3,25 @@
 const isPlainObject = require('lodash.isplainobject')
 const jsonSchemaValidate = require('jsonschema').validate
 const toJsonSchema = require('to-json-schema')
-const ValidationError = require('./ValidationError')
+const {ValidationError, InvalidExampleError} = require('./errors')
 const {getValidatorOptions, convertToToJsonSchemaOptions} = require('./config')
 
 function formatErrors(errors) {
   return errors.map(item =>
     `${item.property.replace('instance.', 'Parameter ')} ${item.message}`).join(';')
+}
+
+function getAndValidateRequiredOptionalProps(arr, obj) {
+  const props = Array.isArray(arr) ? arr : [arr]
+  props.forEach(prop => {
+    if (typeof prop !== 'string') {
+      throw new InvalidExampleError('$required/$optional fields may contain only `string` values')
+    }
+    if (typeof obj[prop] === 'undefined') {
+      throw new InvalidExampleError('$required/$optional fields may contain only properties existing in the example object')
+    }
+  })
+  return props
 }
 
 function preProcessObject(obj) {
@@ -26,11 +39,11 @@ function preProcessObject(obj) {
   const optionalExists = Boolean(obj.$optional)
 
   if (requiredExists) {
-    const requiredProps = Array.isArray(obj.$required) ? obj.$required : [obj.$required]
+    const requiredProps = getAndValidateRequiredOptionalProps(obj.$required, obj)
     requireInfo.optional = Object.getOwnPropertyNames(obj)
       .filter(property => requiredProps.indexOf(property) < 0 && property !== '$required' && property !== '$optional')
   } else if (optionalExists) {
-    const optionalProps = Array.isArray(obj.$optional) ? obj.$optional : [obj.$optional]
+    const optionalProps = getAndValidateRequiredOptionalProps(obj.$optional, obj)
     requireInfo.optional = optionalProps.filter(property => property !== '$required' && property !== '$optional')
   }
 
@@ -39,7 +52,7 @@ function preProcessObject(obj) {
       return acc
     }
     if (Array.isArray(obj[current])) { // arrays
-      const [subArr, subRequireInfo] = preProcessArray(obj[current])
+      const [subArr, subRequireInfo] = preProcessArray(obj[current]) // eslint-disable-line no-use-before-define
       acc[current] = subArr
       requireInfo.properties[current] = subRequireInfo
     } else if (!isPlainObject(obj[current]) || obj[current].$schema) { // anything other than objects and arrays
@@ -93,27 +106,29 @@ function setSchemaRequire(schema, requireInfo) {
   }
 
   const newSchema = {...schema}
-  if (requireInfo.type === 'array') {
+  if (requireInfo.type === 'array' && newSchema.items) {
     newSchema.items = setSchemaRequire(newSchema.items, requireInfo.items[0])
   }
 
-  // TODO check for undefines (probably for empty objects)
-
-  if (requireInfo.type === 'object') {
+  if (requireInfo.type === 'object' && newSchema.properties) {
     newSchema.properties = {...newSchema.properties}
     requireInfo.optional.forEach(optionalProperty => {
-      newSchema.properties[optionalProperty] = {...newSchema.properties[optionalProperty], required: false}
+      if (newSchema.properties[optionalProperty]) {
+        newSchema.properties[optionalProperty] = {...newSchema.properties[optionalProperty], required: false}
+      }
     })
 
     Object.getOwnPropertyNames(requireInfo.properties).forEach(propName => {
-      newSchema.properties[propName] = {...setSchemaRequire(newSchema.properties[propName], requireInfo.properties[propName])}
+      if (newSchema.properties[propName]) {
+        newSchema.properties[propName] = {...setSchemaRequire(newSchema.properties[propName], requireInfo.properties[propName])}
+      }
     })
   }
 
   return newSchema
 }
 
-function getSchema(example, toJsonSchemaOptions) {
+function getSchemaStandalone(example, toJsonSchemaOptions) {
   const [preProcessedExample, requireInfo] = preProcess(example)
   const schema = toJsonSchema(preProcessedExample, toJsonSchemaOptions)
 
@@ -126,11 +141,15 @@ class Validator {
     this.toJsonSchemaOptions = convertToToJsonSchemaOptions(this.options)
   }
 
+  getSchema(example) {
+    return getSchemaStandalone(example, this.toJsonSchemaOptions)
+  }
+
   validate(instance, example) {
     if (typeof example === 'undefined') {
-      throw new ValidationError('Invalid example')
+      throw new InvalidExampleError()
     }
-    const schema = getSchema(example, this.toJsonSchemaOptions)
+    const schema = this.getSchema(example)
     return jsonSchemaValidate(instance, schema)
   }
 

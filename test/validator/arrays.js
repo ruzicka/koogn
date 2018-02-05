@@ -1,6 +1,7 @@
 'use strict'
 
-const {testBoth, testMerging, testNonMerging} = require('../helpers')
+const {expect} = require('chai')
+const {testBoth, testMerging, testNonMerging, uniformValidator} = require('../helpers')
 
 describe('Array', () => {
 
@@ -105,6 +106,15 @@ describe('Array', () => {
         [['a', 'b']],
       ]
       testCases.forEach(val => testNonMerging(val, ['a', 'b', 1], false))
+    })
+
+    it('should throw error when array items are incompatible', () => {
+      expect(() => uniformValidator.validate(['a', 1], ['a', 'b', 1]))
+        .to.throw(Error, 'Invalid schema, incompatible array items')
+      expect(() => uniformValidator.validate([], [{a: 1}, {b: 2}]))
+        .to.throw(Error, 'Invalid schema, incompatible array items')
+      expect(() => uniformValidator.validate([], {x: [{a: 1, c: [11, 'x']}]}))
+        .to.throw(Error, 'Invalid schema, incompatible array items')
     })
   })
 

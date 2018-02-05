@@ -4,6 +4,8 @@ const {createValidator} = require('../../src')
 
 const mergingValidator = createValidator({arrays: {mode: 'all'}})
 const nonMergingValidator = createValidator({arrays: {mode: 'first'}})
+const uniformValidator = createValidator({arrays: {mode: 'uniform'}})
+const standardValidator = createValidator()
 
 const {expect} = require('chai')
 
@@ -40,4 +42,6 @@ module.exports = {
   testSName,
   testSContent,
   testSBoth,
+  standardValidator,
+  uniformValidator,
 }
