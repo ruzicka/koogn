@@ -1,5 +1,5 @@
 {
-  "name": "exvalidator",
+  "name": "koogn",
   "version": "0.1.0",
   "description": "Validate JS objects by example (not schema)",
   "main": "lib/index.js",
@@ -14,14 +14,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ruzicka/xvalidator.git"
+    "url": "git+https://github.com/ruzicka/koogn.git"
   },
   "author": "David Ruzicka",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/ruzicka/xvalidator/issues"
+    "url": "https://github.com/ruzicka/koogn/issues"
   },
-  "homepage": "https://github.com/ruzicka/xvalidator#readme",
+  "homepage": "https://github.com/ruzicka/koogn#readme",
   "keywords": [
     "validator",
     "validation",
@@ -29,7 +29,8 @@
     "schema",
     "json",
     "jsonschema",
-    "example"
+    "example",
+    "koogn"
   ],
   "dependencies": {
     "jsonschema": "^1.2.2",
