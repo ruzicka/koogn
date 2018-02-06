@@ -1,67 +1,59 @@
-# xValidator
+# Koogn
 
+Schema-less validation for JavaScript
 
-## Extensible
+## Introduction
 
-If you ever need greater expressibility in your validation needs, you are not
-stuck 
+Sooner or later you're gonna need to somehow verify that the data you're working with conforms to
+what you expect them to be like. For example, that the email submitted to your API endpoint has
+proper format or that the value that should be a number doesn't receive a string.
 
+There's a plenty of great libraries for exactly that but all of them needs you to create some kind
+of blueprint, a schema describing the structure of the data.
 
-## config
+Koogn works differently. Instead of validating data (let's say a javascript object) against a schema,
+it compares it to just another javascript object - an example. Koogn is smart, so it can analyze
+structure of your example object and object you want to validate to make proper comparison. 
 
-cacheSchemas: true
-example: true
+## Advantages
 
-## alternative syntax
+ - Very simple to use
+ - You don't need to define schema, just use some `example` data
+ - Most of the time you even don't need to prepare the `example`. You probably already have it. Your `example` data is the data you are testing your program/API/whathever with or the output it generates.
+ - If you ever find yourself in need of a bit more complex validation scenarios, it's easy to extend your `example` using a simple syntax to get what you need.
+ - There's no performance drawbacks for all these features (see more on that bellow)
+ - Just by looking at it, the `example` data clearly communicates how the data should look like   
 
-```javascript
-validate(instance, example)
-validate(instance).against(example)
+## Example
 
-isValid(instance, example)
-validate(instance).isLike(example)
-
-validate(instance).throwIfNotLike(example)
-
-```
-## Preapplied example
-
-example provided in config
-
-or
-
-```javascript
-const validate = validate.apply(example)
-validate(instance)
-
-isValid(instance, example)
-validate(instance).isLike(example)
-
-validate(instance).throwIfNotLike(example)
-
-```
-
-
-
-# xValidator
-
-Schema-less validation library.
-Very simple to use yet powerfull validation library.
-
-The main difference when comparing to other validation libraries is that you don't
-create schema to validate your data against. 
-
-Let's say you want to validate this object:
-
+Let's say we want to validate this object:
 ```javascript
 const book = {
-  title: 'Best book ever',
+  title: 'Saved by Koogn',
   authors: ['David Ruzicka'],
   releaseDate: '2018-02-03',
 }
 ```
 
-To validate it by JSON schema you would need schema like this one:
+The only thing that we need is another object. `example` - the ethalon by which we will compare the `book`
+object. 
+
+```javascript
+const {isValid} = require('koogn').createValidator()
+
+const example = {
+  title: 'Example',
+  authors: ['John Smith', 'Joe Noel'],
+  releaseDate: '1967-10-24',
+}
+
+isValid(book, example) // returns true
+```
+
+We've determined that the `book` object is valid. The structure is the same, types of the properties are the same and
+the format of `releaseDate` field in both cases is the date. 
+
+Just for comparison: To validate exactly the same things using JSON schema requires you to define schema like this:
 
 ```javascript
 const schema = {
@@ -87,149 +79,54 @@ const schema = {
 }
 ```
 
-xValidator doesn't need schema. It's validating objects and other data types simply by providing
-example object.  
-
-```javascript
-const {isValid} = require('xvalidator').createValidator()
-
-const example = {
-  title: 'Best book ever',
-  authors: ['David Ruzicka'],
-  releaseDate: '2018-02-03',
-}
-const instance = {
-  title: 'Book of the year',
-  authors: ['John Smith', 'Jane Doe'],
-  releaseDate: '2018-02-03',
-}
-
-isValid(instance, example) // returns true
-```
-
-
 ## Usage
 
-``` javascript
-const validator = require('not-json-schema').createValidator()
-
-validator.validate(yourData, {id: 1, name: 'text'})  // returns validation info
-
-// alternatively you can use: 
-validator.throwIfNotValid(yourData, {id: 1, name: 'text'})  // throws an error
-validator.isValid(yourData, {id: 1, name: 'text'})  // true or false
+First install Koogn and save it to your project
+```bash
+npm install koogn --save
 ```
 
-## Types
+## Optional / required properties
 
-### number
-
-There are two numeric types: 
-- integers
-- numbers (both integers and floats)
+By default all properties in provided `example` object are considered to be
+`required`. In case you want some of your object properties to be optional,
+ you can use reserved property `$optional` and pass property name that should
+ be optional or the array of them:
 
 ``` javascript
-{
-  integerProperty: 1,
-  floatProperty: 1.1
-  integerProperty2: 2.0,  // beware decimal part
-}
-```
-### string
-
-simple strings:
-
-```javascript
-{
-  stringProperty: 'some string'
-}
+validator.validate(yourData, {
+    id: 1, 
+    author: 'john',     // optional property
+    title: 'The Book',  
+    year: 1940,         // optional property
+    $optional: ['year', 'author']
+})
 ```
 
-In case you want to impose some format restriction, it is possible to specify some
-of the predefined formats as a property value.
+If you find your object to have more optional properties than required ones, use
+`$required` instead. This changes default behaviour and assumes every property is now optional
+except the ones specified in `$required`.
 
-```javascript
-{
-  prop01: 'date',         // '2012-07-08'
-  prop02: 'time',         // '16:41:41'
-  prop03: 'date-time',    // '2012-07-08T16:41:41.532Z' (and variants)
-  prop04: 'utc-millisec', // '1234567890'
-  prop05: 'regex',
-  prop16: 'regexp',
-  prop17: 'pattern',
-  prop08: 'color',
-  prop09: 'style',
-  prop10: 'phone',
-  prop11: 'email',                    //DOPLNIT
-  prop12: 'ip-address',
-  prop13: 'ipv4',
-  prop14: 'ipv6',
-  prop15: 'uri',
-  prop16: 'host-name',
-  prop17: 'hostname',
-  prop18: 'alpha',
-  prop19: 'alphanumeric',
-}
-```
-
-If you already have a template object and you don't want to rewrite properties values to
-match certain format identifier, some formats are autodetected.
-
-```javascript
-{
-  prop01: 'date',         // '2012-07-08'
-  prop02: 'time',         // '16:41:41'
-  prop03: 'date-time',    // '2012-07-08T16:41:41.532Z' (and variants)
-  prop04: 'utc-millisec', // '1234567890'
-  prop05: 'regex',
-  prop16: 'regexp',
-  prop17: 'pattern',
-  prop08: 'color',
-  prop09: 'style',
-  prop10: 'phone',
-  prop11: 'email',                    //DOPLNIT
-  prop12: 'ip-address',
-  prop13: 'ipv4',
-  prop14: 'ipv6',
-  prop15: 'uri',
-  prop16: 'host-name',
-  prop17: 'hostname',
-  prop18: 'alpha',
-  prop19: 'alphanumeric',
-}
+``` javascript
+validator.validate(yourData, {
+    id: 1,            // the only required field
+    author: 'john',
+    title: 'The Book',
+    year: 1940,
+    $required: 'id'
+})
 ```
 
 
-### object
+## More complex validations
 
-required
-Dependencies?
-minProperties, maxProperties (asi nedelat)
-regexp keys?
-
-
-### array
-
-uniqueItems?
-minItems, maxItems
-
-
-### boolean
-
-
-### null
-
-## More complex templates
-
-Chances are that your project starts with only simple needs for object validation and
-as it grows there may be necessary to handle more complex validation scenarios. Although
-'not-json-schema' is intended mainly for simple validation, you don't need to replace
-it with more complex solution as 'not-json-schema' can handle it quite fine.
-  
-For every property that needs more complex validation you can use special keyword
-`$schema` to define full `jsonschema` for that property. You can use all the features
+Chances are that your project starts with only simple validation needs. But as your project
+grows it may be necessary to handle more complex validation scenarios. Although
+`Koogn` is mainly intended for simple validation, it can handle even 
+complex validations by utilizing reserved key `$schema`. Through it you can define full `jsonschema` for the property with all the features
 supported by `jsonschema`
   
+In the example bellow validation of `labels` property is completely overriden by provided schema:   
 ``` javascript
 {
   id: 11,
@@ -247,45 +144,192 @@ supported by `jsonschema`
 }
 ```  
 
-## Optional items
 
-By default all properties in provided validation object are considered to be
-`required`. In case you want some of your object properties to be optional,
- you can use reserved `$optional` property:
-
-``` javascript
-validator.validate(yourData, {
-    id: 1, 
-    author: 'john',
-    title: 'The Book',
-    year: 1940,         // the only optional property
-    $optional: ['year']
-})
-```
-
-If you find your object to have more optional properties than required ones, use
-`$required` instead. This changes default behaviour to assume every property is optional
-except the ones specified in `$required`.
-
-``` javascript
-validator.validate(yourData, {
-    id: 1,            // the only required field
-    author: 'john',
-    title: 'The Book',
-    year: 1940,
-    $required: ['id']
-})
-```
+## Configuration
 
 
-
-{
-    object: {
-        int: 50
-    },
-    int: 55,
-    float: 44.5
-    string: 'hello'
-    date: 'hello'
-    
+There's a number of options through which you can configure validator.
+These are default values:
+```javascript
+const options = {
+  arrays: {
+    mode: 'all', // first|uniform|all 
+  },
+  strings: {
+    formatDetectionMode: 'both', // none|name|content|both
+  },
+  objects: {
+    additionalProperties: false, // false|true
+  },
 }
+```
+
+Options should be passed as a parameter to `createValidator` function
+
+```javascript
+const {createValidator} = require('./lib/validator')
+const validator = createValidator({arrays: {mode: 'first'}})
+``` 
+
+or as a parameter to a `Validator` constructor:
+
+```javascript
+const {Validator} = require('./lib/validator')
+const validator = new Validator({arrays: {mode: 'first'}})
+``` 
+
+Whatever you like better
+
+### arrays options
+
+**arrays.mode** (`all|first|uniform` default is `all`)
+
+This option has effect only on arrays containing two or more items   
+  
+`first` - This option takes into account just the first item in any array Rest is ignored.
+  
+`uniform` - This option makes sure that if there are more items all of them shares the same type and structure.
+if not, it throws an error.  
+  
+`all` - If provided `example` object contains array of items with mutually incompatible
+types/structures, parser will try to come up with least common type/structure and validate against that.
+It works in a natural way.
+
+If your `example` object contains array of items sharing the same type, than validator imposes
+that type restriction on array items:
+
+```javascript
+const {isValid} = require('./lib/validator').createValidator({arrays: {mode: 'all'}})
+const example = [1, 3, 4]
+
+isValid([1, 2], example)      // true
+isValid(['a', 'b'], example)  // false
+isValid([1, 2, 'a'], example) // false
+isValid({a: 1}, example)      // false
+```
+
+If your `example` object contains array of mixed numbers and strings, validator assumes that such an
+array can contain mixture of types so it doesn't impose type restriction on array items:
+
+```javascript
+const {isValid} = require('./lib/validator').createValidator({arrays: {mode: 'all'}})
+const example = ['str', 3, 4]
+
+isValid([1, 2], example)      // true
+isValid(['a', 'b'], example)  // true
+isValid([1, 2, 'a'], example) // true
+isValid({a: 1}, example)      // false
+```
+
+If your `example` object contains array of objects that shares the same structure. Only objects having the same
+structure will pass validation
+
+```javascript
+const {isValid} = require('./lib/validator').createValidator({arrays: {mode: 'all'}})
+const example = [
+  {a: 1, b: 'str'},
+  {a: 56, b: 'something'}
+]
+
+isValid([{a: 3, b: 'xxx'}, {a: 588, b: 'aaa'}], example)  // true
+isValid([{a: 3, b: 'xxx'}, {a: 588}], example)            // false (second item is missing property 'b')
+isValid([{a: 3, b: 'xxx'}, {a: 588, b: 11}], example)     // false (b of second item is not string)
+isValid([{a: 3, b: 'xxx'}, 22], example)                  // false (second item is not object)
+isValid(['a', 'b'], example)                              // false (none of the items is object)
+```
+
+If your `example` object contains array of objects that doesn't share the same structure. Than the only restriction
+applied on array items is to be an object 
+
+```javascript
+const {isValid} = require('./lib/validator').createValidator({arrays: {mode: 'all'}})
+const example = [
+  {a: 1, b: 'str'},
+  {a: 56, c: [1]} // structure is different than first item
+]
+
+isValid([{a: 3, b: 'xxx'}, {a: 588, b: 'aaa'}], example)  // true
+isValid([{a: 3, b: 'xxx'}, {a: 588}], example)            // true (structure doesn't matter)
+isValid([{a: 3, b: 'xxx'}, {a: 588, b: 11}], example)     // true (structure doesn't matter)
+isValid([{a: 3, b: 'xxx'}, 22], example)                  // false (second item is not object)
+isValid(['a', 'b'], example)                              // false (none of the items is object)
+```
+
+If your `example` object contains array of items sharing the same type, than validator imposes
+that type restriction on array items:
+
+
+
+### objects options
+
+**objects.additionalProperties** (`true|false` default is `false`)
+
+If this option is set to `true` then object having extra properties than `example`
+object will still be validated  
+
+### strings options
+
+**strings.formatDetectionMode** (`none|name|content|both` default is `both`)
+
+`none` - Validator will make no attempt to detect format of strings in provided
+`example` object
+
+`name` - If string value in provided `example` object matches one from the list
+bellow, restriction for that format will apply.
+
+```javascript
+{
+  prop01: 'date',         // '2012-07-08'
+  prop02: 'time',         // '16:41:41'
+  prop03: 'date-time',    // '2012-07-08T16:41:41.532Z' (and variants)
+  prop04: 'utc-millisec', // '1234567890'
+  prop05: 'regex',
+  prop08: 'color',
+  prop09: 'style',
+  prop10: 'phone',
+  prop11: 'email',                    //DOPLNIT
+  prop12: 'ip-address',
+  prop13: 'ipv4',
+  prop14: 'ipv6',
+  prop15: 'uri',
+  prop16: 'host-name',
+  prop17: 'hostname',
+  prop18: 'alpha',
+  prop19: 'alphanumeric',
+}
+```
+
+example:
+```javascript
+const {isValid} = require('./lib/validator').createValidator({arrays: {stings: 'name'}})
+const example = {updatedAt: 'date-time'}
+
+isValid({updatedAt: '2012-07-08T16:41:41.532Z'}, example)  // true
+isValid({updatedAt: 'hello'}, example)                     // false
+isValid({updatedAt: 11}, example)                          // false
+```
+
+`content` - Similar to `name` option but format is autodetected from the value itself
+example:
+```javascript
+const {isValid} = require('./lib/validator').createValidator({arrays: {mode: 'content'}})
+const example = {updatedAt: '2018-01-01T20:15:31.532Z'}
+
+isValid({updatedAt: '2012-07-08T16:41:41.532Z'}, example)  // true
+isValid({updatedAt: 'hello'}, example)                     // false
+isValid({updatedAt: 11}, example)                          // false
+```
+
+`both` - Combination of both `name` and `content` options
+example:
+```javascript
+const {isValid} = require('./lib/validator').createValidator({arrays: {mode: 'content'}})
+const example = {
+  updatedAt: '2018-01-01T20:15:31.532Z',
+  createdAt: 'date'
+}
+
+isValid({updatedAt: '2012-07-08T16:41:41.532Z', createdAt: '2011-10-01'}, example) // true
+isValid({updatedAt: 'hello', createdAt: '2011-10-01'}, example)                    // false
+isValid({updatedAt: '2012-07-08T16:41:41.532Z', createdAt: 'hello'}, example)      // false
+```
