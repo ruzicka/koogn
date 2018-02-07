@@ -145,7 +145,7 @@ class Validator {
     return getSchemaStandalone(example, this.toJsonSchemaOptions)
   }
 
-  validate(instance, example) {
+  validate(example, instance) {
     if (typeof example === 'undefined') {
       throw new InvalidExampleError()
     }
@@ -153,12 +153,12 @@ class Validator {
     return jsonSchemaValidate(instance, schema)
   }
 
-  isValid(instance, example) {
-    return this.validate(instance, example).errors.length === 0
+  isValid(example, instance) {
+    return this.validate(example, instance).errors.length === 0
   }
 
-  throwIfNotValid(instance, notJsonSchema) {
-    const res = this.validate(instance, notJsonSchema)
+  throwIfNotValid(example, instance) {
+    const res = this.validate(example, instance)
     if (res.errors.length > 0) {
       throw new ValidationError(formatErrors(res.errors))
     }

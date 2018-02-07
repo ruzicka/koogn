@@ -10,7 +10,7 @@ const standardValidator = createValidator()
 const {expect} = require('chai')
 
 const createTestFunction = validator => (testedInstance, example, expected) => {
-  expect(validator.isValid(testedInstance, example)).to.equal(expected)
+  expect(validator.isValid(example, testedInstance)).to.equal(expected)
 }
 
 const createTest = (arrayMergeMode, formatDetectionMode) => createTestFunction(createValidator({

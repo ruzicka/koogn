@@ -50,20 +50,20 @@ const matchingInstance = {
 describe('Validator', () => {
 
   it('invalid example', () => {
-    expect(() => defaultValidator.isValid(book)).to.throw(InvalidExampleError, 'Validation example is invalid')
+    expect(() => defaultValidator.isValid(undefined, book)).to.throw(InvalidExampleError, 'Validation example is invalid')
   })
 
   it('not matching schema', () => {
-    expect(defaultValidator.isValid(notMatchingInstance, book)).to.be.false
-    expect(defaultValidator.validate(notMatchingInstance, book)).to.have.property('errors')
+    expect(defaultValidator.isValid(book, notMatchingInstance)).to.be.false
+    expect(defaultValidator.validate(book, notMatchingInstance)).to.have.property('errors')
       .that.is.an('array').with.length.above(0)
-    expect(() => defaultValidator.throwIfNotValid(notMatchingInstance, book)).to.throw(ValidationError)
+    expect(() => defaultValidator.throwIfNotValid(book, notMatchingInstance)).to.throw(ValidationError)
   })
 
   it('matching schema', () => {
-    expect(defaultValidator.isValid(matchingInstance, book)).to.be.true
-    expect(defaultValidator.validate(matchingInstance, book)).to.have.property('errors')
+    expect(defaultValidator.isValid(book, matchingInstance)).to.be.true
+    expect(defaultValidator.validate(book, matchingInstance)).to.have.property('errors')
       .that.is.an('array').with.lengthOf(0)
-    expect(() => defaultValidator.throwIfNotValid(matchingInstance, book)).to.not.throw(ValidationError)
+    expect(() => defaultValidator.throwIfNotValid(book, matchingInstance)).to.not.throw(ValidationError)
   })
 })
