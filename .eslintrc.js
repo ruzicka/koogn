@@ -21,6 +21,7 @@ module.exports = {
       tabWidth: 2,
       ignoreUrls: true,
       ignoreComments: false,
+      ignoreRegExpLiterals: true,
     }],
     'comma-dangle': ['error', {
       arrays: 'always-multiline',
@@ -33,6 +34,8 @@ module.exports = {
       // multiline: true,
       consistent: true,
     }],
-    'object-curly-spacing': ['error', 'never']
+    'object-curly-spacing': ['error', 'never'],
+    'no-plusplus': 'off',
+    'arrow-parens': ['error', 'as-needed']
   }
 }
