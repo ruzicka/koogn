@@ -87,38 +87,37 @@ function preProcess(val) {
   return [val, null]
 }
 
-// TODO make this immutable
 function setSchemaRequire(schema, requireInfo) {
   if (!requireInfo) {
     return schema
   }
 
+  const newSchema = {...schema}
   if (requireInfo.type === 'array') {
-    setSchemaRequire(schema.items, requireInfo.items[0])
+    newSchema.items = setSchemaRequire(newSchema.items, requireInfo.items[0])
   }
 
   // TODO check for undefines (probably for empty objects)
 
   if (requireInfo.type === 'object') {
+    newSchema.properties = {...newSchema.properties}
     requireInfo.optional.forEach(optionalProperty => {
-      schema.properties[optionalProperty].required = false
+      newSchema.properties[optionalProperty] = {...newSchema.properties[optionalProperty], required: false}
     })
 
-    Object.getOwnPropertyNames(requireInfo.properties).forEach(property => {
-      setSchemaRequire(schema.properties[property], requireInfo.properties[property])
+    Object.getOwnPropertyNames(requireInfo.properties).forEach(propName => {
+      newSchema.properties[propName] = {...setSchemaRequire(newSchema.properties[propName], requireInfo.properties[propName])}
     })
   }
 
-  return schema
+  return newSchema
 }
 
 function getSchema(example, toJsonSchemaOptions) {
   const [preProcessedExample, requireInfo] = preProcess(example)
   const schema = toJsonSchema(preProcessedExample, toJsonSchemaOptions)
 
-  setSchemaRequire(schema, requireInfo)
-
-  return schema
+  return setSchemaRequire(schema, requireInfo)
 }
 
 class Validator {

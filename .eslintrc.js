@@ -36,6 +36,7 @@ module.exports = {
     }],
     'object-curly-spacing': ['error', 'never'],
     'no-plusplus': 'off',
+    'no-confusing-arrow': 'off',
     'arrow-parens': ['error', 'as-needed']
   }
 }
