@@ -150,15 +150,32 @@ class Validator {
       throw new InvalidExampleError()
     }
     const schema = this.getSchema(example)
+    if (arguments.length === 1) {
+      return inst => jsonSchemaValidate(inst, schema)
+    }
     return jsonSchemaValidate(instance, schema)
   }
 
-  isValid(example, instance) {
-    return this.validate(example, instance).errors.length === 0
+  isValid(...args) {
+    if (args.length === 1) {
+      const fnc = this.validate(...args)
+      return inst => fnc(inst).errors.length === 0
+    }
+    return this.validate(...args).errors.length === 0
   }
 
-  throwIfNotValid(example, instance) {
-    const res = this.validate(example, instance)
+  throwIfNotValid(...args) { // eslint-disable-line consistent-return
+    if (args.length === 1) {
+      const fnc = this.validate(...args)
+      return inst => {
+        const res = fnc(inst)
+        if (res.errors.length > 0) {
+          throw new ValidationError(formatErrors(res.errors))
+        }
+      }
+    }
+
+    const res = this.validate(...args)
     if (res.errors.length > 0) {
       throw new ValidationError(formatErrors(res.errors))
     }

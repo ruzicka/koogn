@@ -47,7 +47,7 @@ const example = {
   releaseDate: '1967-10-24',
 }
 
-isValid(book, example) // returns true
+isValid(example, book) // returns true
 ```
 
 We've determined that the `book` object is valid. The structure is the same, types of the properties are the same and
@@ -86,6 +86,63 @@ First install Koogn and save it to your project
 npm install koogn --save
 ```
 
+Then require the package and create validator instance. There are two ways how to do that:
+``` javascript
+const validator = require('koogn').createValidator()
+```
+
+or
+
+``` javascript
+const Validator = require('koogn').Validator
+const validator = new Validator()
+```
+
+Both `createValidator` function and `Validator` constructor can receive configuration object to tweak validator behavior (more on that bellow) 
+
+Once you have an validator instance you can use one of these methods to perform validation.
+
+**validate(example, instance)** performs validation of `instance` against provide `example` and returns full validation report.  
+
+**isValid(example, instance)** performs validation of `instance` against provide `example` and returns simple true/false if `instance` is valid or not.
+  
+**throwIfNotValid(example, instance)** performs validation of `instance` against provide `example` and if `instance` is not valid, throws an `ValidationError`.  
+
+``` javascript
+const validator = require('koogn').createValidator()
+
+const bookExample = {
+  title: 'Example',
+  authors: ['John Smith', 'Joe Noel'],
+  releaseDate: '1967-10-24',
+}
+
+const instance = {
+  title: 'Saved by Koogn',
+  authors: ['David Ruzicka'],
+  releaseDate: '2018-02-03',
+}
+
+validator.validate(bookExample, instance)
+
+validator.isValid(bookExample, instance)
+
+validator.throwIfNotValid(bookExample, instance)
+```
+
+All three of those methods can also return validation function with first parameter
+already pre-applied. Using it this way is also more performant solution as the
+conversion from example object to internal schema needs to happen just once. Let's
+demonstrate on `isValid`:
+
+``` javascript
+
+const isValidBook = validator.isValid(bookExample)  // create test function
+
+isValidBook(instance)
+```
+  
+ 
 ## Optional / required properties
 
 By default all properties in provided `example` object are considered to be
@@ -94,13 +151,13 @@ By default all properties in provided `example` object are considered to be
  be optional or the array of them:
 
 ``` javascript
-validator.validate(yourData, {
+validator.validate({
     id: 1, 
     author: 'john',     // optional property
     title: 'The Book',  
     year: 1940,         // optional property
     $optional: ['year', 'author']
-})
+}, yourData)
 ```
 
 If you find your object to have more optional properties than required ones, use
@@ -108,13 +165,13 @@ If you find your object to have more optional properties than required ones, use
 except the ones specified in `$required`.
 
 ``` javascript
-validator.validate(yourData, {
+validator.validate({
     id: 1,            // the only required field
     author: 'john',
     title: 'The Book',
     year: 1940,
     $required: 'id'
-})
+}, yourData)
 ```
 
 
@@ -202,10 +259,10 @@ that type restriction on array items:
 const {isValid} = require('./lib/validator').createValidator({arrays: {mode: 'all'}})
 const example = [1, 3, 4]
 
-isValid([1, 2], example)      // true
-isValid(['a', 'b'], example)  // false
-isValid([1, 2, 'a'], example) // false
-isValid({a: 1}, example)      // false
+isValid(example, [1, 2])      // true
+isValid(example, ['a', 'b'])  // false
+isValid(example, [1, 2, 'a']) // false
+isValid(example, {a: 1})      // false
 ```
 
 If your `example` object contains array of mixed numbers and strings, validator assumes that such an
@@ -215,10 +272,10 @@ array can contain mixture of types so it doesn't impose type restriction on arra
 const {isValid} = require('./lib/validator').createValidator({arrays: {mode: 'all'}})
 const example = ['str', 3, 4]
 
-isValid([1, 2], example)      // true
-isValid(['a', 'b'], example)  // true
-isValid([1, 2, 'a'], example) // true
-isValid({a: 1}, example)      // false
+isValid(example, [1, 2])      // true
+isValid(example, ['a', 'b'])  // true
+isValid(example, [1, 2, 'a']) // true
+isValid(example, {a: 1})      // false
 ```
 
 If your `example` object contains array of objects that shares the same structure. Only objects having the same
@@ -231,11 +288,11 @@ const example = [
   {a: 56, b: 'something'}
 ]
 
-isValid([{a: 3, b: 'xxx'}, {a: 588, b: 'aaa'}], example)  // true
-isValid([{a: 3, b: 'xxx'}, {a: 588}], example)            // false (second item is missing property 'b')
-isValid([{a: 3, b: 'xxx'}, {a: 588, b: 11}], example)     // false (b of second item is not string)
-isValid([{a: 3, b: 'xxx'}, 22], example)                  // false (second item is not object)
-isValid(['a', 'b'], example)                              // false (none of the items is object)
+isValid(example, [{a: 3, b: 'xxx'}, {a: 588, b: 'aaa'}])  // true
+isValid(example, [{a: 3, b: 'xxx'}, {a: 588}])            // false (second item is missing property 'b')
+isValid(example, [{a: 3, b: 'xxx'}, {a: 588, b: 11}])     // false (b of second item is not string)
+isValid(example, [{a: 3, b: 'xxx'}, 22])                  // false (second item is not object)
+isValid(example, ['a', 'b'])                              // false (none of the items is object)
 ```
 
 If your `example` object contains array of objects that doesn't share the same structure. Than the only restriction
@@ -248,11 +305,11 @@ const example = [
   {a: 56, c: [1]} // structure is different than first item
 ]
 
-isValid([{a: 3, b: 'xxx'}, {a: 588, b: 'aaa'}], example)  // true
-isValid([{a: 3, b: 'xxx'}, {a: 588}], example)            // true (structure doesn't matter)
-isValid([{a: 3, b: 'xxx'}, {a: 588, b: 11}], example)     // true (structure doesn't matter)
-isValid([{a: 3, b: 'xxx'}, 22], example)                  // false (second item is not object)
-isValid(['a', 'b'], example)                              // false (none of the items is object)
+isValid(example, [{a: 3, b: 'xxx'}, {a: 588, b: 'aaa'}])  // true
+isValid(example, [{a: 3, b: 'xxx'}, {a: 588}])            // true (structure doesn't matter)
+isValid(example, [{a: 3, b: 'xxx'}, {a: 588, b: 11}])     // true (structure doesn't matter)
+isValid(example, [{a: 3, b: 'xxx'}, 22])                  // false (second item is not object)
+isValid(example, ['a', 'b'])                              // false (none of the items is object)
 ```
 
 If your `example` object contains array of items sharing the same type, than validator imposes
@@ -283,19 +340,19 @@ bellow, restriction for that format will apply.
   prop02: 'time',         // '16:41:41'
   prop03: 'date-time',    // '2012-07-08T16:41:41.532Z' (and variants)
   prop04: 'utc-millisec', // '1234567890'
-  prop05: 'regex',
-  prop08: 'color',
-  prop09: 'style',
-  prop10: 'phone',
-  prop11: 'email',                    //DOPLNIT
-  prop12: 'ip-address',
-  prop13: 'ipv4',
-  prop14: 'ipv6',
-  prop15: 'uri',
-  prop16: 'host-name',
-  prop17: 'hostname',
-  prop18: 'alpha',
-  prop19: 'alphanumeric',
+  prop05: 'regex',        // '/a/'
+  prop08: 'color',        // '#ff0000'
+  prop09: 'style',        // 'color: red;'
+  prop10: 'phone',        // '+31 42 123 4567'
+  prop11: 'email',        // 'john@smith.com'            
+  prop12: 'ip-address',   // '192.168.0.1'
+  prop13: 'ipv4',         // '192.168.0.1'
+  prop14: 'ipv6',         // 'fe80::1%lo0'
+  prop15: 'uri',          // 'http://www.google.com/'
+  prop16: 'host-name',    // 'www.google.com'
+  prop17: 'hostname',     // 'www.google.com'
+  prop18: 'alpha',        // 'abracadabra'
+  prop19: 'alphanumeric', // 'abracadabra123'
 }
 ```
 
@@ -304,9 +361,9 @@ example:
 const {isValid} = require('./lib/validator').createValidator({arrays: {stings: 'name'}})
 const example = {updatedAt: 'date-time'}
 
-isValid({updatedAt: '2012-07-08T16:41:41.532Z'}, example)  // true
-isValid({updatedAt: 'hello'}, example)                     // false
-isValid({updatedAt: 11}, example)                          // false
+isValid(example, {updatedAt: '2012-07-08T16:41:41.532Z'})  // true
+isValid(example, {updatedAt: 'hello'})                     // false
+isValid(example, {updatedAt: 11})                          // false
 ```
 
 `content` - Similar to `name` option but format is autodetected from the value itself
@@ -315,9 +372,9 @@ example:
 const {isValid} = require('./lib/validator').createValidator({arrays: {mode: 'content'}})
 const example = {updatedAt: '2018-01-01T20:15:31.532Z'}
 
-isValid({updatedAt: '2012-07-08T16:41:41.532Z'}, example)  // true
-isValid({updatedAt: 'hello'}, example)                     // false
-isValid({updatedAt: 11}, example)                          // false
+isValid(example, {updatedAt: '2012-07-08T16:41:41.532Z'})  // true
+isValid(example, {updatedAt: 'hello'})                     // false
+isValid(example, {updatedAt: 11})                          // false
 ```
 
 `both` - Combination of both `name` and `content` options
@@ -329,7 +386,7 @@ const example = {
   createdAt: 'date'
 }
 
-isValid({updatedAt: '2012-07-08T16:41:41.532Z', createdAt: '2011-10-01'}, example) // true
-isValid({updatedAt: 'hello', createdAt: '2011-10-01'}, example)                    // false
-isValid({updatedAt: '2012-07-08T16:41:41.532Z', createdAt: 'hello'}, example)      // false
+isValid(example, {updatedAt: '2012-07-08T16:41:41.532Z', createdAt: '2011-10-01'}) // true
+isValid(example, {updatedAt: 'hello', createdAt: '2011-10-01'})                    // false
+isValid(example, {updatedAt: '2012-07-08T16:41:41.532Z', createdAt: 'hello'})      // false
 ```

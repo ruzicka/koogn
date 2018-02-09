@@ -9,8 +9,8 @@
     "lint": "eslint src/ test/",
     "test": "cross-env NODE_ENV=test mocha --recursive",
     "test:watch": "cross-env NODE_ENV=test mocha --recursive --watch",
-    "test:coverage": "cross-env NODE_ENV=test istanbul cover _mocha -- --recursive",
-    "test:coveralls": "cross-env NODE_ENV=test istanbul cover _mocha -- --recursive && cat ./coverage/lcov.info | coveralls"
+    "test:coverage": "cross-env NODE_ENV=test nyc mocha --recursive",
+    "test:coveralls": "cross-env NODE_ENV=test nyc --reporter=lcov --reporter=text-lcov npm test && cat ./coverage/lcov.info | coveralls"
   },
   "repository": {
     "type": "git",
@@ -49,7 +49,9 @@
     "eslint-config-airbnb-base": "^12.1.0",
     "eslint-plugin-import": "^2.2.0",
     "istanbul": "^0.4.5",
-    "mocha": "5.0.0"
+    "mocha": "5.0.0",
+    "nyc": "^11.4.1",
+    "sinon": "^4.2.2"
   },
   "files": [
     "lib"
