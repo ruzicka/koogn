@@ -109,11 +109,11 @@ describe('Array', () => {
     })
 
     it('should throw error when array items are incompatible', () => {
-      expect(() => uniformValidator.validate(['a', 1], ['a', 'b', 1]))
+      expect(() => uniformValidator.validate(['a', 'b', 1], ['a', 1]))
         .to.throw(Error, 'Invalid schema, incompatible array items')
-      expect(() => uniformValidator.validate([], [{a: 1}, {b: 2}]))
+      expect(() => uniformValidator.validate([{a: 1}, {b: 2}], []))
         .to.throw(Error, 'Invalid schema, incompatible array items')
-      expect(() => uniformValidator.validate([], {x: [{a: 1, c: [11, 'x']}]}))
+      expect(() => uniformValidator.validate({x: [{a: 1, c: [11, 'x']}]}, []))
         .to.throw(Error, 'Invalid schema, incompatible array items')
     })
   })
