@@ -2,10 +2,10 @@
   "name": "koogn",
   "version": "0.1.0",
   "description": "Validate JS objects by example (not schema)",
-  "main": "lib/index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "build": "babel src -d lib",
-    "prepublishOnly": "npm test && npm run build",
+    "build": "babel src -d dist",
+    "prepublishOnly": "npm test && npm run lint && npm run build",
     "lint": "eslint src/ test/",
     "test": "cross-env NODE_ENV=test mocha --recursive",
     "test:watch": "cross-env NODE_ENV=test mocha --recursive --watch",
@@ -54,6 +54,6 @@
     "sinon": "^4.2.2"
   },
   "files": [
-    "lib"
+    "dist"
   ]
 }

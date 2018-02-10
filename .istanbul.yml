@@ -1,5 +1,5 @@
 instrumentation:
-    excludes: ['**/lib/**']
+    excludes: ['**/dist/**']
     include-all-sources: true
 reporting:
     print: detail

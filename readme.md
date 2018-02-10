@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/ruzicka/koogn.svg?branch=master)](https://travis-ci.org/ruzicka/koogn)
+[![Coverage Status](https://coveralls.io/repos/github/ruzicka/koogn/badge.svg?branch=master)](https://coveralls.io/github/ruzicka/koogn?branch=master)
 
 # Koogn
 
