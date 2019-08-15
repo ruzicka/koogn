@@ -1,6 +1,6 @@
 {
   "name": "koogn",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Validate JS objects by example (not schema)",
   "main": "dist/index.js",
   "scripts": {
